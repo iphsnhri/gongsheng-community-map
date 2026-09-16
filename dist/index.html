@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#183f35">
+  <meta name="description" content="以互動地圖探索全台智慧共生示範社區的故事與成果影片。">
+  <title>共生誌｜智慧共生示範社區</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23183f35'/%3E%3Cpath d='M35 9c9 8 12 17 8 27-4 11-12 17-20 20 2-9 0-16 4-26 3-8 5-14 8-21Z' fill='%23c8d6a6'/%3E%3Ccircle cx='37' cy='26' r='5' fill='%23f0b35a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="共生誌首頁">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M26 5c8 8 10 16 6 24-4 8-10 12-17 15 2-7 0-13 3-21 3-7 5-12 8-18Z"/><circle cx="29" cy="18" r="4"/></svg>
+        </span>
+        <span><strong>共生誌</strong><small>智慧共生示範社區</small></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="community-count"><b id="communityCount">30</b> 個示範社區</span>
+        <button class="soft-button" id="listToggle" type="button" aria-controls="communityPanel" aria-expanded="false">
+          <span aria-hidden="true">☰</span> 社區清單
+        </button>
+      </div>
+    </header>
+
+    <main class="map-workspace">
+      <aside class="community-panel" id="communityPanel" aria-label="社區清單">
+        <div class="panel-heading">
+          <div><p>全台示範據點</p><h2>選擇一個社區</h2></div>
+          <button class="icon-button panel-close" id="panelClose" type="button" aria-label="關閉社區清單">×</button>
+        </div>
+        <div class="community-list" id="communityList"></div>
+      </aside>
+
+      <section class="map-view" id="mapView" aria-labelledby="mapTitle">
+        <div class="map-copy">
+          <p class="eyebrow">SMART COMMUNITY ATLAS</p>
+          <h1 id="mapTitle">在島嶼上，看見共生發生</h1>
+          <p>拖曳地圖調整角度，點選標記閱讀社區故事。</p>
+        </div>
+
+        <div class="map-controls" aria-label="地圖控制">
+          <button class="round-button" id="zoomIn" type="button" aria-label="放大地圖">＋</button>
+          <button class="round-button" id="zoomOut" type="button" aria-label="縮小地圖">−</button>
+          <button class="round-button reset-button" id="resetMap" type="button" aria-label="重設地圖視角">↺</button>
+        </div>
+
+        <div class="map-viewport" id="mapViewport" role="application" aria-label="可拖曳旋轉的臺灣社區地圖">
+          <div class="map-perspective">
+            <div class="map-surface" id="mapSurface">
+              <img class="island-layer island-shadow" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-three" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-two" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-one" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-top" src="./assets/taiwan.svg" alt="臺灣本島輪廓">
+              <div class="marker-layer" id="markerLayer"></div>
+              <button class="kinmen-inset" id="kinmenMarker" type="button" aria-label="金門縣下莊社區">
+                <span class="inset-islands" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span>金門</span>
+              </button>
+            </div>
+          </div>
+          <p class="map-hint"><span aria-hidden="true">↔</span> 拖曳旋轉・滾輪縮放</p>
+        </div>
+
+        <div class="map-status" id="mapStatus" role="status">正在載入社區資料…</div>
+
+        <article class="community-card" id="communityCard" hidden aria-modal="false" aria-labelledby="cardTitle">
+          <button class="card-close" id="cardClose" type="button" aria-label="關閉社區介紹">×</button>
+          <div class="card-scroll">
+            <div class="card-location" id="cardLocation"></div>
+            <h2 id="cardTitle"></h2>
+            <p class="card-address" id="cardAddress"></p>
+            <div class="media-frame" id="mediaFrame"></div>
+            <section class="card-section">
+              <h3>社區故事</h3>
+              <p id="cardIntro"></p>
+            </section>
+            <section class="card-section highlights-section">
+              <h3>計畫成果重點</h3>
+              <ul id="cardHighlights"></ul>
+            </section>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
