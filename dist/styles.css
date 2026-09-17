@@ -147,7 +147,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(240,179,90,.8); 
   .round-button { width: 40px; height: 40px; }
   .map-perspective { width: min(92vw, 455px); min-width: 320px; left: 55%; top: 57%; }
   .map-hint { bottom: 14px; }
-  .community-card { position: fixed; z-index: 70; left: 0 !important; right: 0; top: auto !important; bottom: 0; width: 100%; border-radius: 24px 24px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom); animation: sheetIn .3s cubic-bezier(.2,.8,.2,1); }
+  .community-card { position: fixed; z-index: 70; left: 0 !important; right: 0; top: auto !important; bottom: 0; width: 100%; border-radius: 24px 24px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; animation: sheetIn .3s cubic-bezier(.2,.8,.2,1); }
   .community-card::before { display: none; }
   .card-scroll { max-height: min(78dvh, 720px); padding: 27px 20px calc(28px + env(safe-area-inset-bottom)); }
   .community-card h2 { font-size: 1.28rem; }
