@@ -13,13 +13,14 @@
   <div class="page-shell">
     <header class="topbar">
       <a class="brand" href="./" aria-label="共生誌首頁">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M26 5c8 8 10 16 6 24-4 8-10 12-17 15 2-7 0-13 3-21 3-7 5-12 8-18Z"/><circle cx="29" cy="18" r="4"/></svg>
-        </span>
-        <span><strong>共生誌</strong><small>智慧共生示範社區</small></span>
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <strong>共生誌</strong>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <small>智慧共生計畫・社區成果影像</small>
       </a>
       <div class="topbar-actions">
-        <span class="community-count"><b id="communityCount">30</b> 個示範社區</span>
+        <nav class="top-nav" aria-label="主要導覽"><a href="#explore">探索社區</a><span>關於計畫</span></nav>
+        <span class="community-count" aria-live="polite"><b id="communityCount">30</b> 個示範社區</span>
         <button class="soft-button" id="listToggle" type="button" aria-controls="communityPanel" aria-expanded="false">
           <span aria-hidden="true">☰</span> 社區清單
         </button>
@@ -37,10 +38,22 @@
 
       <section class="map-view" id="mapView" aria-labelledby="mapTitle">
         <div class="map-copy">
-          <p class="eyebrow">SMART COMMUNITY ATLAS</p>
-          <h1 id="mapTitle">在島嶼上，看見共生發生</h1>
-          <p>拖曳地圖調整角度，點選標記閱讀社區故事。</p>
+          <h1 id="mapTitle">看見，<br>島嶼上的共生故事</h1>
+          <p class="map-subtitle">走進全台 30 個示範社區</p>
+          <div class="filter-bar" id="explore">
+            <label class="search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4.5 4.5"></path></svg>
+              <input id="searchInput" type="search" placeholder="搜尋社區" autocomplete="off">
+            </label>
+            <label class="county-field">
+              <select id="countyFilter" aria-label="依縣市篩選"><option value="">全部縣市</option></select>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+            </label>
+          </div>
         </div>
+
+        <div class="story-quote" aria-hidden="true">人與土地，<br><span>總能在這裡相遇。</span><i></i></div>
+        <div class="story-count" id="storyCount">30 個社區・30 段故事</div>
 
         <div class="map-controls" aria-label="地圖控制">
           <button class="round-button" id="zoomIn" type="button" aria-label="放大地圖">＋</button>
@@ -52,10 +65,15 @@
           <div class="map-perspective">
             <div class="map-surface" id="mapSurface">
               <img class="island-layer island-shadow" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-six" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-five" src="./assets/taiwan.svg" alt="">
+              <img class="island-layer island-depth depth-four" src="./assets/taiwan.svg" alt="">
               <img class="island-layer island-depth depth-three" src="./assets/taiwan.svg" alt="">
               <img class="island-layer island-depth depth-two" src="./assets/taiwan.svg" alt="">
               <img class="island-layer island-depth depth-one" src="./assets/taiwan.svg" alt="">
               <img class="island-layer island-top" src="./assets/taiwan.svg" alt="臺灣本島輪廓">
+              <span class="island-relief" aria-hidden="true"></span>
+              <img class="island-layer island-terrain" src="./assets/taiwan-terrain.svg" alt="">
               <div class="marker-layer" id="markerLayer"></div>
               <button class="kinmen-inset" id="kinmenMarker" type="button" aria-label="金門縣下莊社區">
                 <span class="inset-islands" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -87,6 +105,8 @@
             </section>
           </div>
         </article>
+
+        <p class="data-note">邊界資料：內政部縣市界線・照片與影片待補</p>
       </section>
     </main>
   </div>

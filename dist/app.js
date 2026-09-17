@@ -10,11 +10,14 @@ const backdrop = document.querySelector('#sheetBackdrop');
 const listPanel = document.querySelector('#communityPanel');
 const list = document.querySelector('#communityList');
 const status = document.querySelector('#mapStatus');
+const searchInput = document.querySelector('#searchInput');
+const countyFilter = document.querySelector('#countyFilter');
+const storyCount = document.querySelector('#storyCount');
 
 let communities = [];
 let selected = null;
 let rotation = -7;
-let tilt = 16;
+let tilt = 22;
 let zoom = 1;
 let drag = null;
 let cardFrame = 0;
@@ -129,7 +132,7 @@ function shortName(community) {
     .replace(community.鄉鎮市區, '')
     .replace(/社區發展協會|社區照顧關懷據點|辦公處|財團法人|福利基金會/g, '')
     .replace(/^[-－]/, '')
-    .trim() || name;
+    .trim() || community.社區名稱;
 }
 
 function createMarkers() {
@@ -165,6 +168,26 @@ function createList() {
     button.addEventListener('click', () => openCommunity(community.社區ID));
     list.append(button);
   });
+}
+
+function normalizeText(value) {
+  return String(value || '').replaceAll('台', '臺').toLocaleLowerCase('zh-Hant');
+}
+
+function applyFilters() {
+  const query = normalizeText(searchInput.value.trim());
+  const county = countyFilter.value;
+  let visibleCount = 0;
+  communities.forEach(community => {
+    const searchable = normalizeText(`${community.社區名稱} ${community.縣市} ${community.鄉鎮市區}`);
+    const matches = (!query || searchable.includes(query)) && (!county || community.縣市 === county);
+    document.querySelectorAll(`[data-id="${community.社區ID}"]`).forEach(element => {
+      element.classList.toggle('is-filtered-out', !matches);
+    });
+    if (matches) visibleCount++;
+  });
+  storyCount.textContent = `${visibleCount} 個社區・${visibleCount} 段故事`;
+  document.querySelector('#communityCount').textContent = visibleCount;
 }
 
 function youtubeId(url) {
@@ -289,7 +312,7 @@ mapViewport.addEventListener('pointerdown', event => {
 mapViewport.addEventListener('pointermove', event => {
   if (!drag) return;
   rotation = Math.max(-24, Math.min(24, drag.rotation + (event.clientX - drag.x) * .08));
-  tilt = Math.max(5, Math.min(28, drag.tilt - (event.clientY - drag.y) * .05));
+  tilt = Math.max(8, Math.min(34, drag.tilt - (event.clientY - drag.y) * .05));
   updateMapTransform();
 });
 mapViewport.addEventListener('pointerup', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
@@ -302,7 +325,7 @@ mapViewport.addEventListener('wheel', event => {
 
 document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.34, zoom + .1); updateMapTransform(); });
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
-document.querySelector('#resetMap').addEventListener('click', () => { rotation = -7; tilt = 16; zoom = 1; updateMapTransform(); });
+document.querySelector('#resetMap').addEventListener('click', () => { rotation = -7; tilt = 22; zoom = 1; updateMapTransform(); });
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
@@ -318,8 +341,15 @@ async function init() {
       .filter(item => item.是否發布 === '是')
       .sort((a, b) => Number(a.顯示順序) - Number(b.顯示順序));
     document.querySelector('#communityCount').textContent = communities.length;
+    [...new Set(communities.map(item => item.縣市))].sort((a, b) => a.localeCompare(b, 'zh-Hant')).forEach(county => {
+      const option = document.createElement('option');
+      option.value = county;
+      option.textContent = county;
+      countyFilter.append(option);
+    });
     createMarkers();
     createList();
+    applyFilters();
     status.hidden = true;
     const requested = new URL(location.href).searchParams.get('community');
     if (requested) openCommunity(requested.toUpperCase(), { updateUrl: false });
@@ -328,5 +358,8 @@ async function init() {
     status.textContent = '社區資料載入失敗，請重新整理頁面。';
   }
 }
+
+searchInput.addEventListener('input', applyFilters);
+countyFilter.addEventListener('change', applyFilters);
 
 init();

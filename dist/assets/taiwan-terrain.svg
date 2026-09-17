@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-120 -24 612.2 760" aria-hidden="true">
+  <defs>
+    <linearGradient id="west" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3f0cf" stop-opacity=".82"/>
+      <stop offset=".58" stop-color="#c4d29a" stop-opacity=".58"/>
+      <stop offset="1" stop-color="#8ca776" stop-opacity=".22"/>
+    </linearGradient>
+    <linearGradient id="east" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#729166" stop-opacity=".22"/>
+      <stop offset=".48" stop-color="#4f7158" stop-opacity=".68"/>
+      <stop offset="1" stop-color="#294c3e" stop-opacity=".76"/>
+    </linearGradient>
+    <linearGradient id="crest" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffde9" stop-opacity=".9"/>
+      <stop offset=".5" stop-color="#dbe2b2" stop-opacity=".68"/>
+      <stop offset="1" stop-color="#95ad7b" stop-opacity=".2"/>
+    </linearGradient>
+    <filter id="ridgeShadow" x="-40%" y="-30%" width="190%" height="190%">
+      <feDropShadow dx="10" dy="11" stdDeviation="7" flood-color="#213f35" flood-opacity=".34"/>
+    </filter>
+  </defs>
+  <g filter="url(#ridgeShadow)">
+    <path fill="url(#west)" d="M286 48 278 116 258 176 250 242 223 312 210 382 181 454 169 526 143 607 112 650 130 548 145 463 164 377 177 291 198 215 222 143 249 83Z"/>
+    <path fill="url(#east)" d="M286 48 314 112 309 171 295 236 286 307 263 379 246 451 211 526 172 607 143 607 169 526 181 454 210 382 223 312 250 242 258 176 278 116Z"/>
+    <path fill="url(#crest)" d="M286 48 291 112 276 176 277 239 250 310 246 379 218 451 201 524 172 607 143 607 169 526 181 454 210 382 223 312 250 242 258 176 278 116Z"/>
+  </g>
+  <g opacity=".64">
+    <path fill="#f8f4d8" d="M276 86 238 170 272 139 273 177Z"/>
+    <path fill="#355a49" d="M276 86 312 166 272 139 273 177Z"/>
+    <path fill="#f5f0cf" d="M255 176 216 273 250 230 252 278Z"/>
+    <path fill="#41654f" d="M255 176 294 270 250 230 252 278Z"/>
+    <path fill="#efecc5" d="M229 269 187 371 224 326 225 381Z"/>
+    <path fill="#3b604d" d="M229 269 272 368 224 326 225 381Z"/>
+    <path fill="#e9e7bd" d="M204 369 164 466 199 424 201 474Z"/>
+    <path fill="#456b53" d="M204 369 245 463 199 424 201 474Z"/>
+    <path fill="#e3e3b5" d="M173 466 139 552 169 515 170 560Z"/>
+    <path fill="#4d7057" d="M173 466 208 548 169 515 170 560Z"/>
+  </g>
+  <path d="M276 86 255 176 229 269 204 369 173 466 143 607" fill="none" stroke="#fffde8" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
+</svg>
