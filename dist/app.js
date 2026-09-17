@@ -17,8 +17,8 @@ const storyCount = document.querySelector('#storyCount');
 
 let communities = [];
 let selected = null;
-let rotation = 0;
-let tilt = 0;
+let rotation = -7;
+let tilt = 14;
 let zoom = 1;
 let drag = null;
 let cardFrame = 0;
@@ -160,9 +160,9 @@ function createMarkers() {
 
 function createRegionLabels() {
   const labelOffsets = {
-    臺北市: [6, 1], 桃園市: [-5, 2], 新竹縣: [-6, 3], 臺中市: [-6, 2],
-    彰化縣: [-6, 3], 南投縣: [6, 2], 雲林縣: [-6, 4], 嘉義縣: [-6, 4],
-    臺南市: [-5, 5], 高雄市: [3, 5], 屏東縣: [4, 4], 宜蘭縣: [6, 2],
+    臺北市: [6, 1], 桃園市: [-3, 2], 新竹縣: [-3, 3], 臺中市: [-3, 2],
+    彰化縣: [-3, 3], 南投縣: [6, 2], 雲林縣: [-3, 4], 嘉義縣: [-3, 4],
+    臺南市: [-1, 5], 高雄市: [3, 5], 屏東縣: [4, 4], 宜蘭縣: [6, 2],
     花蓮縣: [6, 3], 臺東縣: [6, 4],
   };
   Object.entries(labelOffsets).forEach(([county, [offsetX, offsetY]]) => {
@@ -329,8 +329,8 @@ mapViewport.addEventListener('pointerdown', event => {
 });
 mapViewport.addEventListener('pointermove', event => {
   if (!drag) return;
-  rotation = Math.max(-12, Math.min(12, drag.rotation + (event.clientX - drag.x) * .05));
-  tilt = Math.max(0, Math.min(12, drag.tilt - (event.clientY - drag.y) * .025));
+  rotation = Math.max(-18, Math.min(18, drag.rotation + (event.clientX - drag.x) * .05));
+  tilt = Math.max(6, Math.min(22, drag.tilt - (event.clientY - drag.y) * .025));
   updateMapTransform();
 });
 mapViewport.addEventListener('pointerup', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
@@ -343,7 +343,7 @@ mapViewport.addEventListener('wheel', event => {
 
 document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.34, zoom + .1); updateMapTransform(); });
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
-document.querySelector('#resetMap').addEventListener('click', () => { rotation = 0; tilt = 0; zoom = 1; updateMapTransform(); });
+document.querySelector('#resetMap').addEventListener('click', () => { rotation = -7; tilt = 14; zoom = 1; updateMapTransform(); });
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);

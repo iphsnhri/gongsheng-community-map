@@ -64,10 +64,12 @@
         <div class="map-viewport" id="mapViewport" role="application" aria-label="可拖曳旋轉的臺灣社區地圖">
           <div class="map-perspective">
             <div class="map-surface" id="mapSurface">
-              <img class="island-layer terrain-render" src="./assets/taiwan-terrain-render-v2.png" alt="臺灣立體地形">
-              <img class="island-layer boundary-layer" src="./assets/taiwan-boundaries.svg" alt="">
-              <div class="region-label-layer" id="regionLabelLayer" aria-hidden="true"></div>
-              <div class="marker-layer" id="markerLayer"></div>
+              <div class="island-layer terrain-render" role="img" aria-label="臺灣立體地形"></div>
+              <div class="map-overlay">
+                <img class="island-layer boundary-layer" src="./assets/taiwan-boundaries.svg" alt="">
+                <div class="region-label-layer" id="regionLabelLayer" aria-hidden="true"></div>
+                <div class="marker-layer" id="markerLayer"></div>
+              </div>
               <button class="kinmen-inset" id="kinmenMarker" type="button" aria-label="金門縣下莊社區">
                 <span class="inset-islands" aria-hidden="true"><i></i><i></i><i></i></span>
                 <span>金門</span>
