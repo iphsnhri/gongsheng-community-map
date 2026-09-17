@@ -3,6 +3,7 @@ const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
 const mapSurface = document.querySelector('#mapSurface');
 const markerLayer = document.querySelector('#markerLayer');
+const regionLabelLayer = document.querySelector('#regionLabelLayer');
 const kinmenMarker = document.querySelector('#kinmenMarker');
 const card = document.querySelector('#communityCard');
 const cardScroll = card.querySelector('.card-scroll');
@@ -16,8 +17,8 @@ const storyCount = document.querySelector('#storyCount');
 
 let communities = [];
 let selected = null;
-let rotation = -7;
-let tilt = 22;
+let rotation = 0;
+let tilt = 0;
 let zoom = 1;
 let drag = null;
 let cardFrame = 0;
@@ -155,6 +156,23 @@ function createMarkers() {
   kinmenMarker.dataset.id = 'C027';
   kinmenMarker.setAttribute('aria-pressed', 'false');
   kinmenMarker.addEventListener('click', event => { event.stopPropagation(); openCommunity('C027'); });
+}
+
+function createRegionLabels() {
+  const labelOffsets = {
+    臺北市: [6, 1], 桃園市: [-5, 2], 新竹縣: [-6, 3], 臺中市: [-6, 2],
+    彰化縣: [-6, 3], 南投縣: [6, 2], 雲林縣: [-6, 4], 嘉義縣: [-6, 4],
+    臺南市: [-5, 5], 高雄市: [3, 5], 屏東縣: [4, 4], 宜蘭縣: [6, 2],
+    花蓮縣: [6, 3], 臺東縣: [6, 4],
+  };
+  Object.entries(labelOffsets).forEach(([county, [offsetX, offsetY]]) => {
+    const anchor = countyAnchors[county];
+    const label = document.createElement('span');
+    label.textContent = county.replace(/[縣市]$/, '');
+    label.style.left = `${((anchor.x + 120) / 612.2) * 100 + offsetX}%`;
+    label.style.top = `${((anchor.y + 24) / 760) * 100 + offsetY}%`;
+    regionLabelLayer.append(label);
+  });
 }
 
 function createList() {
@@ -311,8 +329,8 @@ mapViewport.addEventListener('pointerdown', event => {
 });
 mapViewport.addEventListener('pointermove', event => {
   if (!drag) return;
-  rotation = Math.max(-24, Math.min(24, drag.rotation + (event.clientX - drag.x) * .08));
-  tilt = Math.max(8, Math.min(34, drag.tilt - (event.clientY - drag.y) * .05));
+  rotation = Math.max(-12, Math.min(12, drag.rotation + (event.clientX - drag.x) * .05));
+  tilt = Math.max(0, Math.min(12, drag.tilt - (event.clientY - drag.y) * .025));
   updateMapTransform();
 });
 mapViewport.addEventListener('pointerup', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
@@ -325,7 +343,7 @@ mapViewport.addEventListener('wheel', event => {
 
 document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.34, zoom + .1); updateMapTransform(); });
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
-document.querySelector('#resetMap').addEventListener('click', () => { rotation = -7; tilt = 22; zoom = 1; updateMapTransform(); });
+document.querySelector('#resetMap').addEventListener('click', () => { rotation = 0; tilt = 0; zoom = 1; updateMapTransform(); });
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
@@ -348,6 +366,7 @@ async function init() {
       countyFilter.append(option);
     });
     createMarkers();
+    createRegionLabels();
     createList();
     applyFilters();
     status.hidden = true;

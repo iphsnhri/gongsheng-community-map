@@ -64,16 +64,9 @@
         <div class="map-viewport" id="mapViewport" role="application" aria-label="可拖曳旋轉的臺灣社區地圖">
           <div class="map-perspective">
             <div class="map-surface" id="mapSurface">
-              <img class="island-layer island-shadow" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-six" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-five" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-four" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-three" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-two" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-depth depth-one" src="./assets/taiwan.svg" alt="">
-              <img class="island-layer island-top" src="./assets/taiwan.svg" alt="臺灣本島輪廓">
-              <span class="island-relief" aria-hidden="true"></span>
-              <img class="island-layer island-terrain" src="./assets/taiwan-terrain.svg" alt="">
+              <img class="island-layer terrain-render" src="./assets/taiwan-terrain-render-v2.png" alt="臺灣立體地形">
+              <img class="island-layer boundary-layer" src="./assets/taiwan-boundaries.svg" alt="">
+              <div class="region-label-layer" id="regionLabelLayer" aria-hidden="true"></div>
               <div class="marker-layer" id="markerLayer"></div>
               <button class="kinmen-inset" id="kinmenMarker" type="button" aria-label="金門縣下莊社區">
                 <span class="inset-islands" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -94,11 +87,11 @@
             <div class="card-location" id="cardLocation"></div>
             <h2 id="cardTitle"></h2>
             <p class="card-address" id="cardAddress"></p>
-            <div class="media-frame" id="mediaFrame"></div>
-            <section class="card-section">
-              <h3>社區故事</h3>
+            <section class="card-section card-intro-section">
+              <h3>社區簡介</h3>
               <p id="cardIntro"></p>
             </section>
+            <div class="media-frame" id="mediaFrame"></div>
             <section class="card-section highlights-section">
               <h3>計畫成果重點</h3>
               <ul id="cardHighlights"></ul>
