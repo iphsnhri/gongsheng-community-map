@@ -160,17 +160,20 @@ function createMarkers() {
 
 function createRegionLabels() {
   const labelOffsets = {
-    臺北市: [6, 1], 桃園市: [-3, 2], 新竹縣: [-3, 3], 臺中市: [-3, 2],
-    彰化縣: [-3, 3], 南投縣: [6, 2], 雲林縣: [-3, 4], 嘉義縣: [-3, 4],
-    臺南市: [-1, 5], 高雄市: [3, 5], 屏東縣: [4, 4], 宜蘭縣: [6, 2],
-    花蓮縣: [6, 3], 臺東縣: [6, 4],
+    臺北市: [34, 0], 新北市: [54, 25], 桃園市: [-25, 2],
+    新竹市: [-52, -8], 新竹縣: [10, 14], 苗栗縣: [-30, 12],
+    臺中市: [-20, 18], 彰化縣: [-45, 0], 南投縣: [28, 10],
+    雲林縣: [-40, 10], 嘉義市: [-60, -12], 嘉義縣: [30, 15],
+    臺南市: [-35, 20], 高雄市: [30, 32], 屏東縣: [25, 20],
+    宜蘭縣: [58, 12], 花蓮縣: [80, 20], 臺東縣: [95, 25],
   };
-  Object.entries(labelOffsets).forEach(([county, [offsetX, offsetY]]) => {
-    const anchor = countyAnchors[county];
+  Object.entries(countyAnchors).forEach(([county, anchor]) => {
+    const [offsetX, offsetY] = labelOffsets[county] || [0, 0];
     const label = document.createElement('span');
-    label.textContent = county.replace(/[縣市]$/, '');
-    label.style.left = `${((anchor.x + 120) / 612.2) * 100 + offsetX}%`;
-    label.style.top = `${((anchor.y + 24) / 760) * 100 + offsetY}%`;
+    label.textContent = county;
+    label.dataset.county = county;
+    label.style.left = `${((anchor.x + offsetX + 120) / 612.2) * 100}%`;
+    label.style.top = `${((anchor.y + offsetY + 24) / 760) * 100}%`;
     regionLabelLayer.append(label);
   });
 }
@@ -323,6 +326,7 @@ function closePanel() {
 
 mapViewport.addEventListener('pointerdown', event => {
   if (event.target.closest('button')) return;
+  event.preventDefault();
   drag = { x: event.clientX, y: event.clientY, rotation, tilt };
   mapViewport.setPointerCapture(event.pointerId);
   mapViewport.classList.add('is-dragging');
@@ -335,6 +339,7 @@ mapViewport.addEventListener('pointermove', event => {
 });
 mapViewport.addEventListener('pointerup', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
 mapViewport.addEventListener('pointercancel', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
+mapViewport.addEventListener('selectstart', event => event.preventDefault());
 mapViewport.addEventListener('wheel', event => {
   event.preventDefault();
   zoom = Math.max(.82, Math.min(1.34, zoom + (event.deltaY < 0 ? .06 : -.06)));
