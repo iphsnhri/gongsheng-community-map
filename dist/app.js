@@ -3,6 +3,7 @@ const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
 const mapSurface = document.querySelector('#mapSurface');
 const markerLayer = document.querySelector('#markerLayer');
+const regionAnchorLayer = document.querySelector('#regionAnchorLayer');
 const regionLabelLayer = document.querySelector('#regionLabelLayer');
 const kinmenMarker = document.querySelector('#kinmenMarker');
 const card = document.querySelector('#communityCard');
@@ -22,6 +23,9 @@ let tilt = 14;
 let zoom = 1;
 let drag = null;
 let cardFrame = 0;
+let regionLabelFrame = 0;
+let regionLabelUntil = 0;
+const regionLabels = [];
 
 function parseCsv(text) {
   const rows = [];
@@ -169,13 +173,37 @@ function createRegionLabels() {
   };
   Object.entries(countyAnchors).forEach(([county, anchor]) => {
     const [offsetX, offsetY] = labelOffsets[county] || [0, 0];
+    const anchorPoint = document.createElement('i');
     const label = document.createElement('span');
     label.textContent = county;
     label.dataset.county = county;
-    label.style.left = `${((anchor.x + offsetX + 120) / 612.2) * 100}%`;
-    label.style.top = `${((anchor.y + offsetY + 24) / 760) * 100}%`;
+    anchorPoint.style.left = `${((anchor.x + offsetX + 120) / 612.2) * 100}%`;
+    anchorPoint.style.top = `${((anchor.y + offsetY + 24) / 760) * 100}%`;
+    regionAnchorLayer.append(anchorPoint);
     regionLabelLayer.append(label);
+    regionLabels.push({ anchor: anchorPoint, label });
   });
+  scheduleRegionLabelPosition(120);
+}
+
+function positionRegionLabels() {
+  const layerRect = regionLabelLayer.getBoundingClientRect();
+  regionLabels.forEach(({ anchor, label }) => {
+    const rect = anchor.getBoundingClientRect();
+    label.style.left = `${rect.left + rect.width / 2 - layerRect.left}px`;
+    label.style.top = `${rect.top + rect.height / 2 - layerRect.top}px`;
+  });
+}
+
+function scheduleRegionLabelPosition(duration = 500) {
+  regionLabelUntil = Math.max(regionLabelUntil, performance.now() + duration);
+  if (regionLabelFrame) return;
+  const tick = () => {
+    positionRegionLabels();
+    if (performance.now() < regionLabelUntil) regionLabelFrame = requestAnimationFrame(tick);
+    else regionLabelFrame = 0;
+  };
+  regionLabelFrame = requestAnimationFrame(tick);
 }
 
 function createList() {
@@ -310,6 +338,7 @@ function updateMapTransform() {
   mapSurface.style.setProperty('--turn', `${rotation}deg`);
   mapSurface.style.setProperty('--tilt', `${tilt}deg`);
   mapSurface.style.setProperty('--zoom', zoom);
+  scheduleRegionLabelPosition();
   scheduleCardPosition();
 }
 
@@ -353,7 +382,7 @@ document.querySelector('#cardClose').addEventListener('click', () => closeCommun
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
 backdrop.addEventListener('click', () => { if (listPanel.classList.contains('is-open')) closePanel(); else closeCommunity(); });
-addEventListener('resize', scheduleCardPosition);
+addEventListener('resize', () => { scheduleCardPosition(); scheduleRegionLabelPosition(120); });
 addEventListener('keydown', event => { if (event.key === 'Escape') { if (listPanel.classList.contains('is-open')) closePanel(); else if (selected) closeCommunity(); } });
 
 async function init() {
