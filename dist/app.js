@@ -204,20 +204,23 @@ function positionRegionLabels() {
 
   const markerRects = mapMarkers.map(({ button }) => button.getBoundingClientRect());
   const collidesWithMarker = rect => markerRects.some(markerRect => !(
-    rect.right + 8 < markerRect.left ||
-    rect.left - 8 > markerRect.right ||
-    rect.bottom + 8 < markerRect.top ||
-    rect.top - 8 > markerRect.bottom
+    rect.right + 4 < markerRect.left ||
+    rect.left - 4 > markerRect.right ||
+    rect.bottom + 4 < markerRect.top ||
+    rect.top - 4 > markerRect.bottom
   ));
   const preferredNudges = {
-    臺北市: [[44, -24], [-44, -24]],
-    新北市: [[48, 0], [42, 26]],
-    桃園市: [[-46, 0], [-40, -26]],
-    新竹縣: [[46, 0], [42, 26]],
-    臺中市: [[-46, 0], [-40, 26]],
-    高雄市: [[48, 0], [42, 26]],
+    臺北市: [[0, -30], [-22, -28], [22, -28]],
+    新北市: [[28, -6], [28, 18]],
+    桃園市: [[-28, -8], [-30, 16]],
+    新竹市: [[-28, 0], [-26, -20]],
+    新竹縣: [[14, 22], [26, 8]],
+    苗栗縣: [[-28, 8], [-24, 24]],
+    宜蘭縣: [[30, 0], [28, 20]],
+    臺中市: [[-32, 0], [-28, 22]],
+    高雄市: [[30, 0], [26, 22]],
   };
-  const fallbackNudges = [[40, 0], [-40, 0], [0, -30], [0, 30], [44, -25], [-44, -25], [44, 25], [-44, 25]];
+  const fallbackNudges = [[28, 0], [-28, 0], [0, -24], [0, 24], [32, -20], [-32, -20], [32, 20], [-32, 20], [40, 0], [-40, 0]];
 
   regionLabels.forEach(({ anchor, label }) => {
     const anchorRect = anchor.getBoundingClientRect();
