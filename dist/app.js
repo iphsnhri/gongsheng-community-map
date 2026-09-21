@@ -1,4 +1,6 @@
 const CSV_URL = './data/communities.csv';
+const LABEL_OFFSETS_KEY = 'gongshengCountyLabelOffsetsV1';
+const labelEditMode = new URL(location.href).searchParams.get('editLabels') === '1';
 const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
 const mapSurface = document.querySelector('#mapSurface');
@@ -29,6 +31,13 @@ let regionLabelFrame = 0;
 let regionLabelUntil = 0;
 const regionLabels = [];
 const mapMarkers = [];
+let manualLabelOffsets = {};
+
+try {
+  manualLabelOffsets = JSON.parse(localStorage.getItem(LABEL_OFFSETS_KEY) || '{}');
+} catch {
+  manualLabelOffsets = {};
+}
 
 function parseCsv(text) {
   const rows = [];
@@ -226,6 +235,14 @@ function positionRegionLabels() {
     const anchorRect = anchor.getBoundingClientRect();
     const baseLeft = anchorRect.left + anchorRect.width / 2 - layerRect.left;
     const baseTop = anchorRect.top + anchorRect.height / 2 - layerRect.top;
+    label.dataset.baseLeft = String(baseLeft);
+    label.dataset.baseTop = String(baseTop);
+    const manualOffset = manualLabelOffsets[label.dataset.county];
+    if (Array.isArray(manualOffset)) {
+      label.style.left = `${baseLeft + Number(manualOffset[0] || 0)}px`;
+      label.style.top = `${baseTop + Number(manualOffset[1] || 0)}px`;
+      return;
+    }
     label.style.left = `${baseLeft}px`;
     label.style.top = `${baseTop}px`;
     if (!collidesWithMarker(label.getBoundingClientRect())) return;
@@ -236,6 +253,83 @@ function positionRegionLabels() {
       label.style.top = `${baseTop + offsetY}px`;
       if (!collidesWithMarker(label.getBoundingClientRect())) break;
     }
+  });
+}
+
+function enableLabelEditor() {
+  if (!labelEditMode) return;
+  document.body.classList.add('label-edit-mode');
+  const editor = document.createElement('aside');
+  editor.className = 'label-editor';
+  editor.innerHTML = `
+    <strong>縣市名稱調整模式</strong>
+    <span>直接拖曳名稱；完成後複製設定並貼回對話。</span>
+    <div>
+      <button type="button" data-action="copy">複製位置設定</button>
+      <button type="button" data-action="reset">全部重設</button>
+      <a href="./">離開調整模式</a>
+    </div>
+    <small aria-live="polite"></small>`;
+  document.body.append(editor);
+  const message = editor.querySelector('small');
+  let labelDrag = null;
+
+  regionLabels.forEach(({ label }) => {
+    label.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const county = label.dataset.county;
+      const baseLeft = Number(label.dataset.baseLeft);
+      const baseTop = Number(label.dataset.baseTop);
+      const currentLeft = parseFloat(label.style.left) || baseLeft;
+      const currentTop = parseFloat(label.style.top) || baseTop;
+      labelDrag = {
+        label,
+        county,
+        startX: event.clientX,
+        startY: event.clientY,
+        offsetX: currentLeft - baseLeft,
+        offsetY: currentTop - baseTop,
+      };
+      label.setPointerCapture(event.pointerId);
+      label.classList.add('is-adjusting');
+    });
+    label.addEventListener('pointermove', event => {
+      if (!labelDrag || labelDrag.label !== label) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const offsetX = Math.round(labelDrag.offsetX + event.clientX - labelDrag.startX);
+      const offsetY = Math.round(labelDrag.offsetY + event.clientY - labelDrag.startY);
+      manualLabelOffsets[labelDrag.county] = [offsetX, offsetY];
+      label.style.left = `${Number(label.dataset.baseLeft) + offsetX}px`;
+      label.style.top = `${Number(label.dataset.baseTop) + offsetY}px`;
+      message.textContent = `${labelDrag.county}：水平 ${offsetX}px、垂直 ${offsetY}px`;
+    });
+    const finishDrag = event => {
+      if (!labelDrag || labelDrag.label !== label) return;
+      event.stopPropagation();
+      label.classList.remove('is-adjusting');
+      labelDrag = null;
+      localStorage.setItem(LABEL_OFFSETS_KEY, JSON.stringify(manualLabelOffsets));
+    };
+    label.addEventListener('pointerup', finishDrag);
+    label.addEventListener('pointercancel', finishDrag);
+  });
+
+  editor.querySelector('[data-action="copy"]').addEventListener('click', async () => {
+    const output = JSON.stringify(manualLabelOffsets);
+    try {
+      await navigator.clipboard.writeText(output);
+      message.textContent = '位置設定已複製，請直接貼回對話。';
+    } catch {
+      window.prompt('請複製以下位置設定', output);
+    }
+  });
+  editor.querySelector('[data-action="reset"]').addEventListener('click', () => {
+    manualLabelOffsets = {};
+    localStorage.removeItem(LABEL_OFFSETS_KEY);
+    message.textContent = '已恢復自動排列。';
+    scheduleRegionLabelPosition(120);
   });
 }
 
@@ -455,6 +549,7 @@ async function init() {
     });
     createMarkers();
     createRegionLabels();
+    enableLabelEditor();
     createList();
     applyFilters();
     status.hidden = true;
