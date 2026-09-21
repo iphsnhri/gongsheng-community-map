@@ -258,8 +258,13 @@ function positionRegionLabels() {
     label.dataset.baseTop = String(baseTop);
     const configuredOffset = manualLabelOffsets[label.dataset.county] || DEFAULT_LABEL_OFFSETS[label.dataset.county];
     if (Array.isArray(configuredOffset)) {
-      label.style.left = `${baseLeft + Number(configuredOffset[0] || 0)}px`;
-      label.style.top = `${baseTop + Number(configuredOffset[1] || 0)}px`;
+      const offsetX = Number(configuredOffset[0] || 0) * zoom;
+      const offsetY = Number(configuredOffset[1] || 0) * zoom;
+      const turnDelta = (rotation + 7) * Math.PI / 180;
+      const rotatedOffsetX = offsetX * Math.cos(turnDelta) - offsetY * Math.sin(turnDelta);
+      const rotatedOffsetY = offsetX * Math.sin(turnDelta) + offsetY * Math.cos(turnDelta);
+      label.style.left = `${baseLeft + rotatedOffsetX}px`;
+      label.style.top = `${baseTop + rotatedOffsetY}px`;
       return;
     }
     label.style.left = `${baseLeft}px`;
