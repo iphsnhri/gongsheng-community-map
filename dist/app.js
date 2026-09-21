@@ -1,6 +1,25 @@
 const CSV_URL = './data/communities.csv';
 const LABEL_OFFSETS_KEY = 'gongshengCountyLabelOffsetsV1';
 const labelEditMode = new URL(location.href).searchParams.get('editLabels') === '1';
+const DEFAULT_LABEL_OFFSETS = {
+  臺北市: [-41, -57],
+  新北市: [-12, -51],
+  宜蘭縣: [-9, -23],
+  花蓮縣: [-13, -17],
+  臺東縣: [-38, -8],
+  屏東縣: [-86, -15],
+  高雄市: [-119, 36],
+  臺南市: [-35, -11],
+  嘉義市: [75, -17],
+  嘉義縣: [-108, -14],
+  雲林縣: [-24, -11],
+  彰化縣: [-22, -18],
+  臺中市: [-74, -25],
+  苗栗縣: [-32, -25],
+  桃園市: [-28, -42],
+  新竹市: [-18, -16],
+  新竹縣: [39, 10],
+};
 const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
 const mapSurface = document.querySelector('#mapSurface');
@@ -237,10 +256,10 @@ function positionRegionLabels() {
     const baseTop = anchorRect.top + anchorRect.height / 2 - layerRect.top;
     label.dataset.baseLeft = String(baseLeft);
     label.dataset.baseTop = String(baseTop);
-    const manualOffset = manualLabelOffsets[label.dataset.county];
-    if (Array.isArray(manualOffset)) {
-      label.style.left = `${baseLeft + Number(manualOffset[0] || 0)}px`;
-      label.style.top = `${baseTop + Number(manualOffset[1] || 0)}px`;
+    const configuredOffset = manualLabelOffsets[label.dataset.county] || DEFAULT_LABEL_OFFSETS[label.dataset.county];
+    if (Array.isArray(configuredOffset)) {
+      label.style.left = `${baseLeft + Number(configuredOffset[0] || 0)}px`;
+      label.style.top = `${baseTop + Number(configuredOffset[1] || 0)}px`;
       return;
     }
     label.style.left = `${baseLeft}px`;
@@ -328,7 +347,7 @@ function enableLabelEditor() {
   editor.querySelector('[data-action="reset"]').addEventListener('click', () => {
     manualLabelOffsets = {};
     localStorage.removeItem(LABEL_OFFSETS_KEY);
-    message.textContent = '已恢復自動排列。';
+    message.textContent = '已恢復網站正式設定。';
     scheduleRegionLabelPosition(120);
   });
 }
