@@ -3,6 +3,7 @@ const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
 const mapSurface = document.querySelector('#mapSurface');
 const markerLayer = document.querySelector('#markerLayer');
+const markerAnchorLayer = document.querySelector('#markerAnchorLayer');
 const regionAnchorLayer = document.querySelector('#regionAnchorLayer');
 const regionLabelLayer = document.querySelector('#regionLabelLayer');
 const kinmenMarker = document.querySelector('#kinmenMarker');
@@ -15,6 +16,7 @@ const status = document.querySelector('#mapStatus');
 const searchInput = document.querySelector('#searchInput');
 const countyFilter = document.querySelector('#countyFilter');
 const storyCount = document.querySelector('#storyCount');
+const searchFeedback = document.querySelector('#searchFeedback');
 
 let communities = [];
 let selected = null;
@@ -26,6 +28,7 @@ let cardFrame = 0;
 let regionLabelFrame = 0;
 let regionLabelUntil = 0;
 const regionLabels = [];
+const mapMarkers = [];
 
 function parseCsv(text) {
   const rows = [];
@@ -145,21 +148,25 @@ function createMarkers() {
   const centres = countyCentres();
   const positions = resolveMarkerCollisions(mainland.map(community => projectCommunity(community, centres)));
   mainland.forEach((community, index) => {
+    const anchor = document.createElement('i');
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'map-marker';
     button.dataset.id = community.社區ID;
-    button.style.left = `${positions[index].left}%`;
-    button.style.top = `${positions[index].top}%`;
+    anchor.style.left = `${positions[index].left}%`;
+    anchor.style.top = `${positions[index].top}%`;
     button.setAttribute('aria-label', `${community.社區名稱}，${community.縣市}${community.鄉鎮市區}`);
     button.setAttribute('aria-pressed', 'false');
     button.innerHTML = `<span class="marker-tooltip">${shortName(community)}</span>`;
     button.addEventListener('click', event => { event.stopPropagation(); openCommunity(community.社區ID); });
+    markerAnchorLayer.append(anchor);
     markerLayer.append(button);
+    mapMarkers.push({ anchor, button });
   });
   kinmenMarker.dataset.id = 'C027';
   kinmenMarker.setAttribute('aria-pressed', 'false');
   kinmenMarker.addEventListener('click', event => { event.stopPropagation(); openCommunity('C027'); });
+  scheduleRegionLabelPosition(120);
 }
 
 function createRegionLabels() {
@@ -192,6 +199,12 @@ function positionRegionLabels() {
     const rect = anchor.getBoundingClientRect();
     label.style.left = `${rect.left + rect.width / 2 - layerRect.left}px`;
     label.style.top = `${rect.top + rect.height / 2 - layerRect.top}px`;
+  });
+  const markerLayerRect = markerLayer.getBoundingClientRect();
+  mapMarkers.forEach(({ anchor, button }) => {
+    const rect = anchor.getBoundingClientRect();
+    button.style.left = `${rect.left + rect.width / 2 - markerLayerRect.left}px`;
+    button.style.top = `${rect.top + rect.height / 2 - markerLayerRect.top}px`;
   });
 }
 
@@ -232,11 +245,15 @@ function applyFilters() {
     const matches = (!query || searchable.includes(query)) && (!county || community.縣市 === county);
     document.querySelectorAll(`[data-id="${community.社區ID}"]`).forEach(element => {
       element.classList.toggle('is-filtered-out', !matches);
+      element.classList.toggle('is-search-match', Boolean(query) && matches);
     });
     if (matches) visibleCount++;
   });
   storyCount.textContent = `${visibleCount} 個社區・${visibleCount} 段故事`;
   document.querySelector('#communityCount').textContent = visibleCount;
+  document.querySelector('.filter-bar').classList.toggle('has-query', Boolean(query));
+  searchFeedback.hidden = !query;
+  if (query) searchFeedback.textContent = visibleCount ? `找到 ${visibleCount} 個符合「${searchInput.value.trim()}」的社區` : `找不到符合「${searchInput.value.trim()}」的社區`;
 }
 
 function youtubeId(url) {
@@ -356,17 +373,23 @@ function closePanel() {
 mapViewport.addEventListener('pointerdown', event => {
   if (event.target.closest('button')) return;
   event.preventDefault();
-  drag = { x: event.clientX, y: event.clientY, rotation, tilt };
+  drag = { x: event.clientX, y: event.clientY, rotation, tilt, moved: false };
   mapViewport.setPointerCapture(event.pointerId);
   mapViewport.classList.add('is-dragging');
 });
 mapViewport.addEventListener('pointermove', event => {
   if (!drag) return;
+  if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 5) drag.moved = true;
   rotation = Math.max(-18, Math.min(18, drag.rotation + (event.clientX - drag.x) * .05));
   tilt = Math.max(6, Math.min(22, drag.tilt - (event.clientY - drag.y) * .025));
   updateMapTransform();
 });
-mapViewport.addEventListener('pointerup', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
+mapViewport.addEventListener('pointerup', () => {
+  const closeFromBlankClick = Boolean(drag && !drag.moved && selected);
+  drag = null;
+  mapViewport.classList.remove('is-dragging');
+  if (closeFromBlankClick) closeCommunity();
+});
 mapViewport.addEventListener('pointercancel', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
 mapViewport.addEventListener('selectstart', event => event.preventDefault());
 mapViewport.addEventListener('wheel', event => {
