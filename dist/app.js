@@ -195,16 +195,44 @@ function createRegionLabels() {
 
 function positionRegionLabels() {
   const layerRect = regionLabelLayer.getBoundingClientRect();
-  regionLabels.forEach(({ anchor, label }) => {
-    const rect = anchor.getBoundingClientRect();
-    label.style.left = `${rect.left + rect.width / 2 - layerRect.left}px`;
-    label.style.top = `${rect.top + rect.height / 2 - layerRect.top}px`;
-  });
   const markerLayerRect = markerLayer.getBoundingClientRect();
   mapMarkers.forEach(({ anchor, button }) => {
     const rect = anchor.getBoundingClientRect();
     button.style.left = `${rect.left + rect.width / 2 - markerLayerRect.left}px`;
     button.style.top = `${rect.top + rect.height / 2 - markerLayerRect.top}px`;
+  });
+
+  const markerRects = mapMarkers.map(({ button }) => button.getBoundingClientRect());
+  const collidesWithMarker = rect => markerRects.some(markerRect => !(
+    rect.right + 8 < markerRect.left ||
+    rect.left - 8 > markerRect.right ||
+    rect.bottom + 8 < markerRect.top ||
+    rect.top - 8 > markerRect.bottom
+  ));
+  const preferredNudges = {
+    臺北市: [[44, -24], [-44, -24]],
+    新北市: [[48, 0], [42, 26]],
+    桃園市: [[-46, 0], [-40, -26]],
+    新竹縣: [[46, 0], [42, 26]],
+    臺中市: [[-46, 0], [-40, 26]],
+    高雄市: [[48, 0], [42, 26]],
+  };
+  const fallbackNudges = [[40, 0], [-40, 0], [0, -30], [0, 30], [44, -25], [-44, -25], [44, 25], [-44, 25]];
+
+  regionLabels.forEach(({ anchor, label }) => {
+    const anchorRect = anchor.getBoundingClientRect();
+    const baseLeft = anchorRect.left + anchorRect.width / 2 - layerRect.left;
+    const baseTop = anchorRect.top + anchorRect.height / 2 - layerRect.top;
+    label.style.left = `${baseLeft}px`;
+    label.style.top = `${baseTop}px`;
+    if (!collidesWithMarker(label.getBoundingClientRect())) return;
+
+    const candidates = [...(preferredNudges[label.dataset.county] || []), ...fallbackNudges];
+    for (const [offsetX, offsetY] of candidates) {
+      label.style.left = `${baseLeft + offsetX}px`;
+      label.style.top = `${baseTop + offsetY}px`;
+      if (!collidesWithMarker(label.getBoundingClientRect())) break;
+    }
   });
 }
 
