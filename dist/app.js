@@ -41,7 +41,7 @@ const searchFeedback = document.querySelector('#searchFeedback');
 
 let communities = [];
 let selected = null;
-let rotation = -7;
+let rotation = 3;
 let tilt = 14;
 let zoom = 1;
 let drag = null;
@@ -549,7 +549,7 @@ mapViewport.addEventListener('wheel', event => {
 
 document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.34, zoom + .1); updateMapTransform(); });
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
-document.querySelector('#resetMap').addEventListener('click', () => { rotation = -7; tilt = 14; zoom = 1; updateMapTransform(); });
+document.querySelector('#resetMap').addEventListener('click', () => { rotation = 3; tilt = 14; zoom = 1; updateMapTransform(); });
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
