@@ -7,7 +7,7 @@
   <meta name="description" content="以互動地圖探索全台智慧共生示範社區的故事與成果影片。">
   <title>共生誌｜智慧共生示範社區</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23183f35'/%3E%3Cpath d='M35 9c9 8 12 17 8 27-4 11-12 17-20 20 2-9 0-16 4-26 3-8 5-14 8-21Z' fill='%23c8d6a6'/%3E%3Ccircle cx='37' cy='26' r='5' fill='%23f0b35a'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=20260922-default-angle">
+  <link rel="stylesheet" href="./styles.css?v=20260922-about-card">
 </head>
 <body>
   <div class="page-shell">
@@ -19,8 +19,9 @@
         <small>智慧共生計畫・社區成果影像</small>
       </a>
       <div class="topbar-actions">
-        <nav class="top-nav" aria-label="主要導覽"><a href="#explore">探索社區</a><span>關於計畫</span></nav>
+        <nav class="top-nav" aria-label="主要導覽"><a href="#explore">探索社區</a><button class="about-nav-button" type="button" data-about-toggle>關於計畫</button></nav>
         <span class="community-count" aria-live="polite"><b id="communityCount">30</b> 個示範社區</span>
+        <button class="soft-button about-mobile-button" type="button" data-about-toggle aria-label="關於計畫">i</button>
         <button class="soft-button" id="listToggle" type="button" aria-controls="communityPanel" aria-expanded="false">
           <span aria-hidden="true">☰</span> 社區清單
         </button>
@@ -105,10 +106,25 @@
           </div>
         </article>
 
+        <div class="about-backdrop" id="aboutBackdrop" hidden></div>
+        <section class="about-dialog" id="aboutDialog" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+          <button class="about-close" id="aboutClose" type="button" aria-label="關閉關於計畫">×</button>
+          <div class="about-scroll">
+            <p class="about-eyebrow">智慧共生社區推動計畫</p>
+            <h2 id="aboutTitle">關於計畫</h2>
+            <p class="about-lead">國衛院執行「智慧共生社區推動計畫」走到第二年。回顧這段歷程，我們對「共生社區」有了更具體、更深刻的理解。</p>
+            <p>從去年的11處到今年的30處示範社區，我們看到每個地方都依自己的條件、需求與生活脈絡，發展出不同的共生樣貌。社區裡住著哪些人、累積多少組織量能、有哪些資源可以連結，甚至居民平時如何互動與互助，都會影響社區解決問題的方式。這些經驗讓我們越來越清楚：共生必須從在地生活開始，從居民真正關心的問題出發，在一次次嘗試、調整與累積中，慢慢長出屬於自己的樣子。</p>
+            <p>科技的應用也是如此。從健康量測、LINE資訊傳遞與服務連結，到AI、時間銀行、數位學習或智慧運動設備，各社區採用的工具不同，但都必須回到同樣的核心問題：社區真正想解決的問題是什麼？居民願不願意使用？志工能不能操作？計畫結束後能不能持續？唯有當科技成為日常，減輕工作負擔、增加居民參與、串聯服務與資源，才有機會在社區留下來。</p>
+            <p>今年，我們也透過地方政府交流工作坊，邀請各縣市共同思考共生社區如何持續發展。地方最接近社區，也最了解社區走到哪裡、還缺什麼，以及哪些資源有機會被串連。當地方逐漸累積陪伴與支持社區的方法，現場長出的經驗才能持續扎根，並往更多社區延伸。</p>
+            <p>走過這兩年，有太多人要感謝。感謝社家署、工作小組的專家老師及一路陪伴社區的輔導老師，持續給予指導與支持。更要謝謝今年30個分布在全台不同地方的示範社區。謝謝你們願意分享執行過程中遇到的困難、限制與挑戰。正因為有這些真實的經驗，我們才能看見共學如何重新連結鄰里、數位工具如何延伸服務，服務設計如何讓居民從接受支持逐漸成為支持他人的力量，也看見30個社區長出30種不同的答案。</p>
+            <p>走過這兩年，我們更加相信，共生社區沒有固定的樣子。每個地方都可以從自己的居民、需求、資源與生活方式出發，尋找適合自己的共生方式。這本成果手冊記錄的，正是一路走來的足跡。我們期待，這些經驗能成為更多社區開始行動時的一點方向與勇氣，走出屬於自己的共生道路。也願有一天，「共生社區」成為我們生活在一個地方時，彼此支持、共同參與最自然的關係。</p>
+          </div>
+        </section>
+
         <p class="data-note">邊界資料：內政部縣市界線・照片與影片待補</p>
       </section>
     </main>
   </div>
-  <script type="module" src="./app.js?v=20260922-default-angle"></script>
+  <script type="module" src="./app.js?v=20260922-about-card"></script>
 </body>
 </html>

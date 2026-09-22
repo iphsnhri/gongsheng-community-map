@@ -38,6 +38,10 @@ const searchInput = document.querySelector('#searchInput');
 const countyFilter = document.querySelector('#countyFilter');
 const storyCount = document.querySelector('#storyCount');
 const searchFeedback = document.querySelector('#searchFeedback');
+const aboutDialog = document.querySelector('#aboutDialog');
+const aboutBackdrop = document.querySelector('#aboutBackdrop');
+const aboutClose = document.querySelector('#aboutClose');
+const aboutToggles = [...document.querySelectorAll('[data-about-toggle]')];
 
 let communities = [];
 let selected = null;
@@ -51,6 +55,7 @@ let regionLabelUntil = 0;
 const regionLabels = [];
 const mapMarkers = [];
 let manualLabelOffsets = {};
+let aboutTrigger = null;
 
 try {
   manualLabelOffsets = JSON.parse(localStorage.getItem(LABEL_OFFSETS_KEY) || '{}');
@@ -519,6 +524,22 @@ function closePanel() {
   document.querySelector('#listToggle').setAttribute('aria-expanded', 'false');
 }
 
+function openAbout(event) {
+  aboutTrigger = event?.currentTarget || document.activeElement;
+  aboutDialog.hidden = false;
+  aboutBackdrop.hidden = false;
+  aboutToggles.forEach(button => button.setAttribute('aria-expanded', 'true'));
+  aboutClose.focus();
+}
+
+function closeAbout() {
+  aboutDialog.hidden = true;
+  aboutBackdrop.hidden = true;
+  aboutToggles.forEach(button => button.setAttribute('aria-expanded', 'false'));
+  if (aboutTrigger instanceof HTMLElement) aboutTrigger.focus();
+  aboutTrigger = null;
+}
+
 mapViewport.addEventListener('pointerdown', event => {
   if (event.target.closest('button')) return;
   event.preventDefault();
@@ -553,9 +574,12 @@ document.querySelector('#resetMap').addEventListener('click', () => { rotation =
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
+aboutToggles.forEach(button => button.addEventListener('click', openAbout));
+aboutClose.addEventListener('click', closeAbout);
+aboutBackdrop.addEventListener('click', closeAbout);
 backdrop.addEventListener('click', () => { if (listPanel.classList.contains('is-open')) closePanel(); else closeCommunity(); });
 addEventListener('resize', () => { scheduleCardPosition(); scheduleRegionLabelPosition(120); });
-addEventListener('keydown', event => { if (event.key === 'Escape') { if (listPanel.classList.contains('is-open')) closePanel(); else if (selected) closeCommunity(); } });
+addEventListener('keydown', event => { if (event.key === 'Escape') { if (!aboutDialog.hidden) closeAbout(); else if (listPanel.classList.contains('is-open')) closePanel(); else if (selected) closeCommunity(); } });
 
 async function init() {
   try {
