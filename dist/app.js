@@ -156,6 +156,18 @@ function resolveMarkerCollisions(points) {
   });
 }
 
+// The four Kaohsiung communities are geographically close. The generic
+// collision pass can otherwise push the later points too far south, across the
+// Kaohsiung–Pingtung boundary. Keep a small, ordered spread around the true
+// projected positions so each point remains selectable without changing its
+// county.
+const markerPositionOverrides = {
+  C021: { left: -0.9, top: -0.55 }, // 前金
+  C022: { left: 0.85, top: -0.7 },  // 大社
+  C024: { left: -0.65, top: 0.45 }, // 前鎮
+  C025: { left: 0.8, top: 0.65 },   // 林園
+};
+
 function shortName(community) {
   const aliases = {
     C005: '龍恩',
@@ -179,7 +191,13 @@ function shortName(community) {
 function createMarkers() {
   const mainland = communities.filter(item => item.社區ID !== 'C027');
   const centres = countyCentres();
-  const positions = resolveMarkerCollisions(mainland.map(community => projectCommunity(community, centres)));
+  const projectedPositions = mainland.map(community => projectCommunity(community, centres));
+  const positions = resolveMarkerCollisions(projectedPositions).map((position, index) => {
+    const override = markerPositionOverrides[mainland[index].社區ID];
+    if (!override) return position;
+    const projected = projectedPositions[index];
+    return { left: projected.left + override.left, top: projected.top + override.top };
+  });
   mainland.forEach((community, index) => {
     const anchor = document.createElement('i');
     const button = document.createElement('button');
