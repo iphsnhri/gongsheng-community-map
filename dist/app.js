@@ -42,6 +42,11 @@ const aboutDialog = document.querySelector('#aboutDialog');
 const aboutBackdrop = document.querySelector('#aboutBackdrop');
 const aboutClose = document.querySelector('#aboutClose');
 const aboutToggles = [...document.querySelectorAll('[data-about-toggle]')];
+const aboutBackgroundNodes = [
+  document.querySelector('.topbar'),
+  listPanel,
+  ...[...mapView.children].filter(element => element !== aboutBackdrop && element !== aboutDialog),
+];
 
 let communities = [];
 let selected = null;
@@ -546,6 +551,7 @@ function openAbout(event) {
   aboutTrigger = event?.currentTarget || document.activeElement;
   aboutDialog.hidden = false;
   aboutBackdrop.hidden = false;
+  aboutBackgroundNodes.forEach(element => { element.inert = true; });
   aboutToggles.forEach(button => button.setAttribute('aria-expanded', 'true'));
   aboutClose.focus();
 }
@@ -553,32 +559,79 @@ function openAbout(event) {
 function closeAbout() {
   aboutDialog.hidden = true;
   aboutBackdrop.hidden = true;
+  aboutBackgroundNodes.forEach(element => { element.inert = false; });
   aboutToggles.forEach(button => button.setAttribute('aria-expanded', 'false'));
   if (aboutTrigger instanceof HTMLElement) aboutTrigger.focus();
   aboutTrigger = null;
 }
 
+function trapAboutFocus(event) {
+  if (aboutDialog.hidden || event.key !== 'Tab') return false;
+  const focusable = [...aboutDialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(element => !element.hidden && element.getClientRects().length);
+  if (!focusable.length) return false;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+  return true;
+}
+
+function endMapDrag({ pointerId = null, closeBlank = false } = {}) {
+  if (!drag || (pointerId !== null && drag.pointerId !== pointerId)) return;
+  const capturedPointer = drag.pointerId;
+  const closeFromBlankClick = Boolean(closeBlank && !drag.moved && selected);
+  drag = null;
+  mapViewport.classList.remove('is-dragging');
+  if (mapViewport.hasPointerCapture?.(capturedPointer)) {
+    try { mapViewport.releasePointerCapture(capturedPointer); } catch { /* capture already released */ }
+  }
+  if (closeFromBlankClick) closeCommunity();
+}
+
+markerLayer.addEventListener('click', event => {
+  if (!isMobile() || event.detail === 0 || !event.target.closest('.map-marker')) return;
+  const candidates = mapMarkers
+    .map(({ button }) => ({ button, rect: button.getBoundingClientRect() }))
+    .filter(({ button, rect }) => !button.classList.contains('is-filtered-out') && rect.width && rect.height);
+  const nearest = candidates.reduce((best, candidate) => {
+    const x = candidate.rect.left + candidate.rect.width / 2;
+    const y = candidate.rect.top + candidate.rect.height / 2;
+    const distance = Math.hypot(event.clientX - x, event.clientY - y);
+    return !best || distance < best.distance ? { button: candidate.button, distance } : best;
+  }, null);
+  if (!nearest) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  openCommunity(nearest.button.dataset.id);
+}, true);
+
 mapViewport.addEventListener('pointerdown', event => {
   if (event.target.closest('button')) return;
+  if (drag && drag.pointerId !== event.pointerId) return;
   event.preventDefault();
-  drag = { x: event.clientX, y: event.clientY, rotation, tilt, moved: false };
+  drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, rotation, tilt, moved: false };
   mapViewport.setPointerCapture(event.pointerId);
   mapViewport.classList.add('is-dragging');
 });
 mapViewport.addEventListener('pointermove', event => {
-  if (!drag) return;
+  if (!drag || drag.pointerId !== event.pointerId) return;
   if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 5) drag.moved = true;
   rotation = Math.max(-18, Math.min(18, drag.rotation + (event.clientX - drag.x) * .05));
   tilt = Math.max(6, Math.min(22, drag.tilt - (event.clientY - drag.y) * .025));
   updateMapTransform();
 });
-mapViewport.addEventListener('pointerup', () => {
-  const closeFromBlankClick = Boolean(drag && !drag.moved && selected);
-  drag = null;
-  mapViewport.classList.remove('is-dragging');
-  if (closeFromBlankClick) closeCommunity();
-});
-mapViewport.addEventListener('pointercancel', () => { drag = null; mapViewport.classList.remove('is-dragging'); });
+mapViewport.addEventListener('pointerup', event => endMapDrag({ pointerId: event.pointerId, closeBlank: true }));
+mapViewport.addEventListener('pointercancel', event => endMapDrag({ pointerId: event.pointerId }));
+mapViewport.addEventListener('lostpointercapture', event => endMapDrag({ pointerId: event.pointerId }));
+addEventListener('blur', () => endMapDrag());
+mapViewport.addEventListener('dblclick', event => event.preventDefault());
 mapViewport.addEventListener('selectstart', event => event.preventDefault());
 mapViewport.addEventListener('wheel', event => {
   event.preventDefault();
@@ -597,7 +650,14 @@ aboutClose.addEventListener('click', closeAbout);
 aboutBackdrop.addEventListener('click', closeAbout);
 backdrop.addEventListener('click', () => { if (listPanel.classList.contains('is-open')) closePanel(); else closeCommunity(); });
 addEventListener('resize', () => { scheduleCardPosition(); scheduleRegionLabelPosition(120); });
-addEventListener('keydown', event => { if (event.key === 'Escape') { if (!aboutDialog.hidden) closeAbout(); else if (listPanel.classList.contains('is-open')) closePanel(); else if (selected) closeCommunity(); } });
+addEventListener('keydown', event => {
+  if (trapAboutFocus(event)) return;
+  if (event.key === 'Escape') {
+    if (!aboutDialog.hidden) closeAbout();
+    else if (listPanel.classList.contains('is-open')) closePanel();
+    else if (selected) closeCommunity();
+  }
+});
 
 async function init() {
   try {

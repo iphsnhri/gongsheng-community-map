@@ -1,3 +1,7 @@
 .sites-runtime/
 .DS_Store
 Thumbs.db
+
+# Local Impeccable installation includes a platform-specific binary.
+.agents/
+.codex/
