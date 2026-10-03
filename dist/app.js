@@ -19,6 +19,16 @@ const DEFAULT_LABEL_OFFSETS = {
   桃園市: [-28, -42],
   新竹市: [-18, -16],
   新竹縣: [39, 10],
+  金門縣: [0, 12],
+};
+const MOBILE_LABEL_OFFSETS = {
+  臺北市: [-14, -21], 新北市: [10, -17], 宜蘭縣: [9, -8],
+  花蓮縣: [12, -4], 臺東縣: [13, 4], 屏東縣: [-24, 6],
+  高雄市: [-31, 14], 臺南市: [-20, 2], 嘉義市: [22, -8],
+  嘉義縣: [-30, -5], 雲林縣: [-14, -4], 彰化縣: [-17, -7],
+  臺中市: [-23, -10], 苗栗縣: [-15, -10], 桃園市: [-14, -17],
+  新竹市: [-12, -7], 新竹縣: [15, 6], 南投縣: [12, 5],
+  金門縣: [0, 12],
 };
 const mapView = document.querySelector('#mapView');
 const mapViewport = document.querySelector('#mapViewport');
@@ -28,9 +38,13 @@ const markerAnchorLayer = document.querySelector('#markerAnchorLayer');
 const regionAnchorLayer = document.querySelector('#regionAnchorLayer');
 const regionLabelLayer = document.querySelector('#regionLabelLayer');
 const kinmenMarker = document.querySelector('#kinmenMarker');
+const kinmenRegionAnchor = document.querySelector('#kinmenRegionAnchor');
 const card = document.querySelector('#communityCard');
 const cardScroll = card.querySelector('.card-scroll');
 const backdrop = document.querySelector('#sheetBackdrop');
+const nearbyPicker = document.querySelector('#nearbyPicker');
+const nearbyPickerList = document.querySelector('#nearbyPickerList');
+const nearbyPickerClose = document.querySelector('#nearbyPickerClose');
 const listPanel = document.querySelector('#communityPanel');
 const list = document.querySelector('#communityList');
 const status = document.querySelector('#mapStatus');
@@ -61,6 +75,7 @@ const regionLabels = [];
 const mapMarkers = [];
 let manualLabelOffsets = {};
 let aboutTrigger = null;
+let nearbyTrigger = null;
 
 try {
   manualLabelOffsets = JSON.parse(localStorage.getItem(LABEL_OFFSETS_KEY) || '{}');
@@ -246,6 +261,13 @@ function createRegionLabels() {
     regionLabelLayer.append(label);
     regionLabels.push({ anchor: anchorPoint, label });
   });
+  if (kinmenRegionAnchor) {
+    const label = document.createElement('span');
+    label.textContent = '金門縣';
+    label.dataset.county = '金門縣';
+    regionLabelLayer.append(label);
+    regionLabels.push({ anchor: kinmenRegionAnchor, label });
+  }
   scheduleRegionLabelPosition(120);
 }
 
@@ -284,7 +306,9 @@ function positionRegionLabels() {
     const baseTop = anchorRect.top + anchorRect.height / 2 - layerRect.top;
     label.dataset.baseLeft = String(baseLeft);
     label.dataset.baseTop = String(baseTop);
-    const configuredOffset = manualLabelOffsets[label.dataset.county] || DEFAULT_LABEL_OFFSETS[label.dataset.county];
+    const configuredOffset = isMobile()
+      ? MOBILE_LABEL_OFFSETS[label.dataset.county]
+      : (manualLabelOffsets[label.dataset.county] || DEFAULT_LABEL_OFFSETS[label.dataset.county]);
     if (Array.isArray(configuredOffset)) {
       const offsetX = Number(configuredOffset[0] || 0) * zoom;
       const offsetY = Number(configuredOffset[1] || 0) * zoom;
@@ -459,6 +483,7 @@ function renderMedia(community) {
 function openCommunity(id, { updateUrl = true } = {}) {
   const community = communities.find(item => item.社區ID === id);
   if (!community) return;
+  closeNearbyPicker({ restoreFocus: false });
   selected = community;
   document.querySelector('#cardLocation').textContent = `${community.縣市}・${community.鄉鎮市區}`;
   document.querySelector('#cardTitle').textContent = community.社區名稱;
@@ -475,7 +500,7 @@ function openCommunity(id, { updateUrl = true } = {}) {
   });
   card.hidden = false;
   cardScroll.scrollTop = 0;
-  backdrop.hidden = !isMobile();
+  updateSheetBackdrop();
   listPanel.classList.remove('is-open');
   document.querySelector('#listToggle').setAttribute('aria-expanded', 'false');
   scheduleCardPosition();
@@ -487,7 +512,7 @@ function openCommunity(id, { updateUrl = true } = {}) {
 function closeCommunity({ updateUrl = true } = {}) {
   selected = null;
   card.hidden = true;
-  backdrop.hidden = true;
+  updateSheetBackdrop();
   document.querySelector('#mediaFrame').replaceChildren();
   document.querySelectorAll('[data-id]').forEach(element => {
     if (element.classList.contains('community-list-button')) element.setAttribute('aria-current', 'false');
@@ -499,6 +524,65 @@ function closeCommunity({ updateUrl = true } = {}) {
 }
 
 function isMobile() { return matchMedia('(max-width: 760px)').matches; }
+
+function updateSheetBackdrop() {
+  const panelOpen = listPanel.classList.contains('is-open');
+  const pickerOpen = !nearbyPicker.hidden;
+  backdrop.hidden = !(panelOpen || pickerOpen || (selected && isMobile()));
+}
+
+function clearNearbyMarkerState() {
+  mapMarkers.forEach(({ button }) => button.classList.remove('is-nearby-candidate'));
+}
+
+function openNearbyPicker(candidateButtons, trigger) {
+  if (selected) closeCommunity();
+  nearbyTrigger = trigger || null;
+  clearNearbyMarkerState();
+  const candidateIds = new Set(candidateButtons.map(button => button.dataset.id));
+  mapMarkers.forEach(({ button }) => button.classList.toggle('is-nearby-candidate', candidateIds.has(button.dataset.id)));
+  const choices = communities.filter(community => candidateIds.has(community.社區ID));
+  nearbyPickerList.replaceChildren(...choices.map(community => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'nearby-picker-option';
+    button.dataset.id = community.社區ID;
+    button.innerHTML = `<span class="nearby-picker-dot" aria-hidden="true"></span><span><strong>${shortName(community)}</strong><small>${community.縣市}・${community.鄉鎮市區}</small></span><span class="nearby-picker-arrow" aria-hidden="true">›</span>`;
+    button.addEventListener('click', () => openCommunity(community.社區ID));
+    return button;
+  }));
+  nearbyPicker.querySelector('#nearbyPickerTitle').textContent = `附近有 ${choices.length} 個社區`;
+  nearbyPicker.hidden = false;
+  updateSheetBackdrop();
+  requestAnimationFrame(() => nearbyPickerList.querySelector('button')?.focus());
+}
+
+function closeNearbyPicker({ restoreFocus = false } = {}) {
+  if (nearbyPicker.hidden) return;
+  nearbyPicker.hidden = true;
+  nearbyPickerList.replaceChildren();
+  clearNearbyMarkerState();
+  updateSheetBackdrop();
+  if (restoreFocus && nearbyTrigger instanceof HTMLElement) nearbyTrigger.focus();
+  nearbyTrigger = null;
+}
+
+function trapNearbyFocus(event) {
+  if (nearbyPicker.hidden || event.key !== 'Tab') return false;
+  const focusable = [...nearbyPicker.querySelectorAll('button:not([disabled])')]
+    .filter(element => element.getClientRects().length);
+  if (!focusable.length) return false;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+  return true;
+}
 
 function scheduleCardPosition() {
   cancelAnimationFrame(cardFrame);
@@ -537,13 +621,14 @@ function updateMapTransform() {
 }
 
 function openPanel() {
+  closeNearbyPicker({ restoreFocus: false });
   listPanel.classList.add('is-open');
-  backdrop.hidden = false;
+  updateSheetBackdrop();
   document.querySelector('#listToggle').setAttribute('aria-expanded', 'true');
 }
 function closePanel() {
   listPanel.classList.remove('is-open');
-  backdrop.hidden = !selected || !isMobile();
+  updateSheetBackdrop();
   document.querySelector('#listToggle').setAttribute('aria-expanded', 'false');
 }
 
@@ -585,31 +670,40 @@ function trapAboutFocus(event) {
 function endMapDrag({ pointerId = null, closeBlank = false } = {}) {
   if (!drag || (pointerId !== null && drag.pointerId !== pointerId)) return;
   const capturedPointer = drag.pointerId;
-  const closeFromBlankClick = Boolean(closeBlank && !drag.moved && selected);
+  const closeFromBlankClick = Boolean(closeBlank && !drag.moved && (selected || !nearbyPicker.hidden));
   drag = null;
   mapViewport.classList.remove('is-dragging');
   if (mapViewport.hasPointerCapture?.(capturedPointer)) {
     try { mapViewport.releasePointerCapture(capturedPointer); } catch { /* capture already released */ }
   }
-  if (closeFromBlankClick) closeCommunity();
+  if (closeFromBlankClick) {
+    if (!nearbyPicker.hidden) closeNearbyPicker();
+    else closeCommunity();
+  }
 }
 
 markerLayer.addEventListener('click', event => {
-  if (!isMobile() || event.detail === 0 || !event.target.closest('.map-marker')) return;
+  const tappedMarker = event.target.closest('.map-marker');
+  if (!isMobile() || event.detail === 0 || !tappedMarker) return;
   const candidates = mapMarkers
     .map(({ button }) => ({ button, rect: button.getBoundingClientRect() }))
     .filter(({ button, rect }) => !button.classList.contains('is-filtered-out') && rect.width && rect.height);
-  const nearest = candidates.reduce((best, candidate) => {
-    const x = candidate.rect.left + candidate.rect.width / 2;
-    const y = candidate.rect.top + candidate.rect.height / 2;
-    const distance = Math.hypot(event.clientX - x, event.clientY - y);
-    return !best || distance < best.distance ? { button: candidate.button, distance } : best;
-  }, null);
-  if (!nearest) return;
+  const tapped = candidates.find(candidate => candidate.button === tappedMarker);
+  if (!tapped) return;
+  const tappedX = tapped.rect.left + tapped.rect.width / 2;
+  const tappedY = tapped.rect.top + tapped.rect.height / 2;
+  const nearby = candidates
+    .filter(candidate => {
+      const x = candidate.rect.left + candidate.rect.width / 2;
+      const y = candidate.rect.top + candidate.rect.height / 2;
+      return Math.hypot(tappedX - x, tappedY - y) <= 46;
+    })
+    .map(candidate => candidate.button);
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
-  openCommunity(nearest.button.dataset.id);
+  if (nearby.length > 1) openNearbyPicker(nearby, tappedMarker);
+  else openCommunity(tappedMarker.dataset.id);
 }, true);
 
 mapViewport.addEventListener('pointerdown', event => {
@@ -643,18 +737,25 @@ document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
 document.querySelector('#resetMap').addEventListener('click', () => { rotation = 3; tilt = 14; zoom = 1; updateMapTransform(); });
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
+nearbyPickerClose.addEventListener('click', () => closeNearbyPicker({ restoreFocus: true }));
 document.querySelector('#listToggle').addEventListener('click', openPanel);
 document.querySelector('#panelClose').addEventListener('click', closePanel);
 aboutToggles.forEach(button => button.addEventListener('click', openAbout));
 aboutClose.addEventListener('click', closeAbout);
 aboutBackdrop.addEventListener('click', closeAbout);
-backdrop.addEventListener('click', () => { if (listPanel.classList.contains('is-open')) closePanel(); else closeCommunity(); });
+backdrop.addEventListener('click', () => {
+  if (listPanel.classList.contains('is-open')) closePanel();
+  else if (!nearbyPicker.hidden) closeNearbyPicker({ restoreFocus: true });
+  else closeCommunity();
+});
 addEventListener('resize', () => { scheduleCardPosition(); scheduleRegionLabelPosition(120); });
 addEventListener('keydown', event => {
   if (trapAboutFocus(event)) return;
+  if (trapNearbyFocus(event)) return;
   if (event.key === 'Escape') {
     if (!aboutDialog.hidden) closeAbout();
     else if (listPanel.classList.contains('is-open')) closePanel();
+    else if (!nearbyPicker.hidden) closeNearbyPicker({ restoreFocus: true });
     else if (selected) closeCommunity();
   }
 });
