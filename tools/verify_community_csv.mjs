@@ -19,10 +19,13 @@ const headers = values[0];
 const records = values.slice(1).map(row => Object.fromEntries(headers.map((header, index) => [header, row[index]])));
 assert.equal(new Set(records.map(record => record.社區ID)).size, 30);
 assert.deepEqual(records.map(record => Number(record.顯示順序)), Array.from({ length: 30 }, (_, index) => index + 1));
-assert.equal(records.filter(record => String(record.社區照片網址).trim()).length, 17);
+assert.equal(records.filter(record => String(record.社區照片網址).trim()).length, 30);
 for (const record of records) {
   assert.ok(String(record.社區簡介).trim(), `${record.社區ID} has no introduction`);
   assert.ok(String(record.計畫成果重點).trim(), `${record.社區ID} has no highlights`);
+  assert.ok(String(record.照片替代文字).trim(), `${record.社區ID} has no photo alt text`);
+  const photoPath = String(record.社區照片網址).replace(/^\.\//, 'website/dist/');
+  await fs.access(photoPath);
 }
 
-console.log(JSON.stringify({ rows: 30, columns: 14, uniqueIds: 30, photos: 17, copiesMatch: true }));
+console.log(JSON.stringify({ rows: 30, columns: 14, uniqueIds: 30, photos: 30, copiesMatch: true }));
