@@ -1,4 +1,4 @@
-const CSV_URL = './data/communities.csv?v=20261003-final-community-content';
+const CSV_URL = './data/communities.csv?v=20261006-community-videos';
 const LABEL_OFFSETS_KEY = 'gongshengCountyLabelOffsetsV1';
 const labelEditMode = new URL(location.href).searchParams.get('editLabels') === '1';
 const DEFAULT_LABEL_OFFSETS = {
