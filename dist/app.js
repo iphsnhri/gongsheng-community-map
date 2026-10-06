@@ -42,6 +42,7 @@ const kinmenRegionAnchor = document.querySelector('#kinmenRegionAnchor');
 const card = document.querySelector('#communityCard');
 const cardScroll = card.querySelector('.card-scroll');
 const cardBackNearby = document.querySelector('#cardBackNearby');
+const mediaFrame = document.querySelector('#mediaFrame');
 const backdrop = document.querySelector('#sheetBackdrop');
 const nearbyPicker = document.querySelector('#nearbyPicker');
 const nearbyPickerList = document.querySelector('#nearbyPickerList');
@@ -474,7 +475,7 @@ function renderMedia(community) {
   const videoId = youtubeId(community.YouTube影片網址);
   const photo = community.社區照片網址.trim();
   if (videoId) {
-    return `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0" title="${community.社區名稱}成果影片" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    return `<button class="video-poster" type="button" data-video-id="${encodeURIComponent(videoId)}" aria-label="播放${community.社區名稱}成果影片"><img src="${photo}" alt=""><span class="video-play-logo" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28"></circle><path d="m26 20 20 12-20 12Z"></path></svg></span></button>`;
   }
   if (photo) {
     return `<img src="${photo}" alt="${community.照片替代文字 || community.社區名稱 + '活動照片'}">`;
@@ -492,7 +493,7 @@ function openCommunity(id, { updateUrl = true, fromNearby = false } = {}) {
   document.querySelector('#cardTitle').textContent = community.社區名稱;
   document.querySelector('#cardAddress').textContent = community.完整地址;
   document.querySelector('#cardIntro').textContent = community.社區簡介;
-  document.querySelector('#mediaFrame').innerHTML = renderMedia(community);
+  mediaFrame.innerHTML = renderMedia(community);
   const highlightList = document.querySelector('#cardHighlights');
   highlightList.replaceChildren(...community.計畫成果重點.split('；').filter(Boolean).map(text => {
     const item = document.createElement('li'); item.textContent = text.replace(/[。；]+$/, ''); return item;
@@ -519,7 +520,7 @@ function closeCommunity({ updateUrl = true, preserveNearby = false } = {}) {
   cardBackNearby.hidden = true;
   if (!preserveNearby) nearbyContextIds = [];
   updateSheetBackdrop();
-  document.querySelector('#mediaFrame').replaceChildren();
+  mediaFrame.replaceChildren();
   document.querySelectorAll('[data-id]').forEach(element => {
     if (element.classList.contains('community-list-button')) element.setAttribute('aria-current', 'false');
     else element.setAttribute('aria-pressed', 'false');
@@ -744,6 +745,18 @@ mapViewport.addEventListener('wheel', event => {
 document.querySelector('#zoomIn').addEventListener('click', () => { zoom = Math.min(1.34, zoom + .1); updateMapTransform(); });
 document.querySelector('#zoomOut').addEventListener('click', () => { zoom = Math.max(.82, zoom - .1); updateMapTransform(); });
 document.querySelector('#resetMap').addEventListener('click', () => { rotation = 3; tilt = 14; zoom = 1; updateMapTransform(); });
+mediaFrame.addEventListener('click', event => {
+  const poster = event.target.closest('.video-poster');
+  if (!poster) return;
+  const videoId = poster.dataset.videoId;
+  if (!videoId) return;
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1`;
+  iframe.title = `${selected?.社區名稱 || '社區'}成果影片`;
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  iframe.allowFullscreen = true;
+  mediaFrame.replaceChildren(iframe);
+});
 document.querySelector('#cardClose').addEventListener('click', () => closeCommunity());
 cardBackNearby.addEventListener('click', () => {
   const candidateButtons = nearbyContextIds
