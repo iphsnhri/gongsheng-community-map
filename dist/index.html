@@ -7,7 +7,7 @@
   <meta name="description" content="以互動地圖探索全台智慧共生示範社區的故事與成果影片。">
   <title>共生誌｜智慧共生示範社區</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23183f35'/%3E%3Cpath d='M35 9c9 8 12 17 8 27-4 11-12 17-20 20 2-9 0-16 4-26 3-8 5-14 8-21Z' fill='%23c8d6a6'/%3E%3Ccircle cx='37' cy='26' r='5' fill='%23f0b35a'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=20261006-video-posters">
+  <link rel="stylesheet" href="./styles.css?v=20261007-background-decor">
 </head>
 <body>
   <div class="page-shell">
@@ -56,6 +56,28 @@
 
         <div class="story-quote" aria-hidden="true">人與土地，<br><span>總能在這裡相遇。</span><i></i></div>
         <div class="story-count" id="storyCount">30 個社區・30 段故事</div>
+
+        <div class="right-decoration" aria-hidden="true">
+          <p class="right-decoration-lead">在這座島嶼上<br>許多美好的改變<br>正在發生</p>
+          <i class="right-decoration-line"></i>
+          <p class="right-decoration-belief">不同的社區<br>相同的信念<br>共生・共好<br>更好的台灣</p>
+          <i class="right-decoration-line right-decoration-line-short"></i>
+          <p class="right-decoration-en">A MORE<br>HARMONIOUS<br>TAIWAN</p>
+          <svg class="right-decoration-mountains" viewBox="0 0 360 190" focusable="false">
+            <defs>
+              <linearGradient id="mountainWash" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#789174" stop-opacity=".04"/>
+                <stop offset=".58" stop-color="#789174" stop-opacity=".2"/>
+                <stop offset="1" stop-color="#789174" stop-opacity=".02"/>
+              </linearGradient>
+              <filter id="mountainSoft"><feGaussianBlur stdDeviation="2.4"/></filter>
+            </defs>
+            <path d="M0 171c33-13 54-18 83-22 25-3 42-15 63-37 18-20 27-15 40-1 20-29 39-51 60-68 20-16 34-10 47 11 17 28 35 35 67 41v95H0Z" fill="url(#mountainWash)" filter="url(#mountainSoft)"/>
+            <path d="M0 171c37-16 66-16 93-27 24-10 42-40 58-41 13-1 20 14 31 18 21-34 45-67 68-73 26-7 34 36 57 45 16 7 31 7 53 2" fill="none" stroke="#738A70" stroke-opacity=".18" stroke-width="2"/>
+            <path d="m202 105 48-57 18 30 12-12 28 27m-172 45 24-29 22 12 18-18" fill="none" stroke="#738A70" stroke-opacity=".11" stroke-width="1.2"/>
+            <path d="M45 166c39-9 65-8 91-18m-67 24c31-5 62-5 91-17m60-9c32-10 73-17 121-14" fill="none" stroke="#738A70" stroke-opacity=".1" stroke-width="1"/>
+          </svg>
+        </div>
 
         <div class="map-controls" aria-label="地圖控制">
           <button class="round-button" id="zoomIn" type="button" aria-label="放大地圖">＋</button>
