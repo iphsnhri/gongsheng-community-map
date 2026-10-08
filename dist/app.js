@@ -751,7 +751,7 @@ mediaFrame.addEventListener('click', event => {
   const videoId = poster.dataset.videoId;
   if (!videoId) return;
   const iframe = document.createElement('iframe');
-  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1`;
+  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1&cc_load_policy=0&cc_lang_pref=zh-TW`;
   iframe.title = `${selected?.社區名稱 || '社區'}成果影片`;
   iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
   iframe.allowFullscreen = true;
